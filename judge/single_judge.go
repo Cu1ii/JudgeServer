@@ -9,15 +9,16 @@ import (
 	"sort"
 	"strings"
 	"time"
+	"xoj_judgehost/configuration"
 	"xoj_judgehost/database"
 	"xoj_judgehost/judger"
 	"xoj_judgehost/util"
 )
 
-const (
-	XojSubmissionPath = "/home/cu1/XOJ/submission"
-	XojResolutionPath = "/home/cu1/XOJ/resolutions"
+var XojSubmissionPath = configuration.GetJudgeEnvironmentConfig().SubmissionPath
+var XojResolutionPath = configuration.GetJudgeEnvironmentConfig().ResolutionPath
 
+const (
 	Python2Path      = "/usr/bin/python2"
 	Python3Path      = "/usr/bin/python3"
 	JavaPath         = "/usr/bin/java"

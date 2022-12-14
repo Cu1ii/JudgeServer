@@ -32,7 +32,7 @@ git clone https://github.com/Cu1ii/JudgeServer.git
 ### 待实现
 
 - [x] 实现 SPJ
-- [ ] 实现配置文件读取
+- [x] 实现配置文件读取
 - [ ] 完善日志
 - [ ] 添加 Docker 环境
 
