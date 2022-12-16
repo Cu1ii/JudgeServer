@@ -18,7 +18,7 @@ func InitRuntimeLog() {
 	})
 	writer1 := &bytes.Buffer{}
 	writer2 := os.Stdout
-	writer3, err := os.OpenFile("/home/cu1/Project/Go/xoj_judgehost/log/runtime.logs", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
+	writer3, err := os.OpenFile("/log/runtime.logs", os.O_CREATE|os.O_WRONLY|os.O_APPEND, 0644)
 	if err != nil {
 		log.Fatalf("create file log/runtime.logs failed: %v", err)
 	}
