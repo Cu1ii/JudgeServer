@@ -1,7 +1,13 @@
 package main
 
-import "xoj_judgehost/judge"
+import (
+	"github.com/sirupsen/logrus"
+	"xoj_judgehost/judge"
+	"xoj_judgehost/logs"
+)
 
 func main() {
+	logs.InitRuntimeLog()
+	logrus.Info("start run judge")
 	judge.RunJudge()
 }

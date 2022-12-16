@@ -10,17 +10,7 @@ import (
 	"time"
 )
 
-type mineFomatter struct{}
-
-func (m *mineFomatter) Format(entry *logrus.Entry) ([]byte, error) {
-	return nil, nil
-}
-
-func init() {
-	initRuntimeLog()
-}
-
-func initRuntimeLog() {
+func InitRuntimeLog() {
 	logrus.SetReportCaller(true)
 	logrus.SetLevel(logrus.DebugLevel)
 	logrus.SetFormatter(&nested.Formatter{
