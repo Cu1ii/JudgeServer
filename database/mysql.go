@@ -4,10 +4,12 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"sync"
 	"xoj_judgehost/configuration"
 )
 
 var MySQLDB = (*gorm.DB)(nil)
+var mu = sync.Mutex{}
 
 func NewMySQLDB() *gorm.DB {
 	mySQLConfig := configuration.GetMySQLConfig()
@@ -21,12 +23,17 @@ func NewMySQLDB() *gorm.DB {
 	if err != nil {
 		logrus.Error("open mysql error: ", err)
 	}
+	logrus.Info("open mysql success")
 	return db
 }
 
 func GetMySQLDB() *gorm.DB {
 	if MySQLDB == nil {
-		MySQLDB = NewMySQLDB()
+		mu.Lock()
+		if MySQLDB == nil {
+			MySQLDB = NewMySQLDB()
+		}
+		mu.Unlock()
 	}
 	return MySQLDB
 }
