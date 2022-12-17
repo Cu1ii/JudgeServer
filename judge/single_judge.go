@@ -61,6 +61,16 @@ func judge(id int, code, language, problem string, contest int, username, oj, oj
 		logrus.Error(err)
 		return
 	}
+	zipPath := fmt.Sprintf("%s/%s/%s.zip", "/home/cu1/XOJ/resolutions", "1", "1")
+	if util.IsFileIn(resolutionPath + "/" + problem + ".zip") {
+		if isSuccess, err := util.UnZipInDictionary(zipPath, resolutionPath+"/"+problem); !isSuccess || err != nil {
+			doneProblem(id, problem, "unzip"+problem+".zip error!", 0, 0, username, contest, 5, "?")
+
+		}
+		if isSuccess, err := util.DeleteFile(resolutionPath+"/"+problem+".zip", true); !isSuccess || err != nil {
+			doneProblem(id, problem, "delete resolution zip error!", 0, 0, username, contest, 5, "?")
+		}
+	}
 	logrus.Info("resolution path = ", resolutionPath)
 	logrus.Info("len files = ", len(files))
 	logrus.Info("files = ", files)
