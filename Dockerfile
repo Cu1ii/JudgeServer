@@ -5,11 +5,11 @@ ENV GOPROXY https://goproxy.cn,direct
 ENV GO111MODULE on
 ENV CGO_ENABLED 0
 
-WORKDIR $GOPATH/src/
+WORKDIR $GOPATH/src/xoj_judgehost
 
-ADD . $GOPATH/src/
+ADD . $GOPATH/src/xoj_judgehost
 
-RUN mkdir build && cd build && cmake ../Judger && make && make install && cd ../xoj_judgehost && go mod tidy
+RUN mkdir build && cd build && cmake ../JudgerCore && make && make install && cd .. && go mod tidy
 
 RUN cd $GOPATH/src/xoj_judgehost && go build .
 
