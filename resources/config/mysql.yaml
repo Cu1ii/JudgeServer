@@ -1,4 +1,4 @@
-dsn: MySqlRoot:370802mysql@tcp(47.100.227.175:3306)/judge_backend?charset=utf8&parseTime=True&loc=Local
+dsn: username:password@tcp(localhost:3306)/judge_backend?charset=utf8&parseTime=True&loc=Local
 default_string_size: 256
 disable_datetime_precision: true
 dont_support_rename_index: true

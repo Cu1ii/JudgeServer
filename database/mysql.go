@@ -4,7 +4,6 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
-	"os"
 	"strconv"
 	"sync"
 	"xoj_judgehost/configuration"
@@ -15,7 +14,7 @@ var mu = sync.Mutex{}
 
 func NewMySQLDB() *gorm.DB {
 	mySQLConfig := configuration.MySQLConfig{}
-	isDefault := os.Getenv("db-default")
+	isDefault := "false" // os.Getenv("db-default")
 	if parseBool, err := strconv.ParseBool(isDefault); err != nil {
 		logrus.Error("get env error", err)
 		return nil
@@ -32,6 +31,7 @@ func NewMySQLDB() *gorm.DB {
 	}), &gorm.Config{})
 	if err != nil {
 		logrus.Error("open mysql error: ", err)
+		return nil
 	}
 	logrus.Info("open mysql success")
 	return db

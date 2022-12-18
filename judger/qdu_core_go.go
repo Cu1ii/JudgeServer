@@ -36,7 +36,8 @@ func Run(max_cpu_time,
 	log_path,
 	seccomp_rule_name string) (*Result, error) {
 
-	proc_args := []string{"echo \"370802wsl\" | sudo -S /usr/lib/judger/libjudger.so"}
+	// 如果不是在 docker 里需要加 sudo 权限, 或者直接以 root 用户执行
+	proc_args := []string{"echo \"your-password\" | sudo -S /usr/lib/judger/libjudger.so"}
 
 	//proc_args = append(proc_args, args...)
 	if len(args) > 0 {
