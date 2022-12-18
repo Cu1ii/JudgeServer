@@ -4,6 +4,8 @@ import (
 	"github.com/sirupsen/logrus"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
+	"os"
+	"strconv"
 	"sync"
 	"xoj_judgehost/configuration"
 )
@@ -12,7 +14,15 @@ var MySQLDB = (*gorm.DB)(nil)
 var mu = sync.Mutex{}
 
 func NewMySQLDB() *gorm.DB {
-	mySQLConfig := configuration.GetMySQLConfig()
+	mySQLConfig := configuration.MySQLConfig{}
+	isDefault := os.Getenv("db-default")
+	if parseBool, err := strconv.ParseBool(isDefault); err != nil {
+		logrus.Error("get env error", err)
+		return nil
+	} else {
+		mySQLConfig = *configuration.GetMySQLConfig(parseBool)
+	}
+
 	db, err := gorm.Open(mysql.New(mysql.Config{
 		DSN:                       mySQLConfig.DSN,                       // DSN data source name
 		DisableDatetimePrecision:  mySQLConfig.DisableDatetimePrecision,  // 禁用 datetime 精度，MySQL 5.6 之前的数据库不支持

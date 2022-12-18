@@ -5,6 +5,7 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/sirupsen/logrus"
 	"github.com/spf13/viper"
+	"os"
 )
 
 type MySQLConfig struct {
@@ -18,11 +19,32 @@ type MySQLConfig struct {
 
 var MySQLConfiguration = (*MySQLConfig)(nil)
 
-func GetMySQLConfig() *MySQLConfig {
+func GetMySQLConfig(isEnv bool) *MySQLConfig {
 	if MySQLConfiguration == nil {
-		MySQLConfiguration = getMySQLConfiguration()
+		if isEnv {
+			MySQLConfiguration = getMySQLConfigByEnv()
+		} else {
+			MySQLConfiguration = getMySQLConfiguration()
+		}
 	}
 	return MySQLConfiguration
+}
+
+func getMySQLConfigByEnv() *MySQLConfig {
+	MySQLConfiguration := MySQLConfig{
+		DisableDatetimePrecision:  true,
+		DefaultStringSize:         256,
+		DontSupportRenameColumn:   true,
+		DontSupportRenameIndex:    true,
+		SkipInitializeWithVersion: false,
+	}
+	usr := os.Getenv("mysql-user")
+	pwd := os.Getenv("mysql-pwd")
+	host := os.Getenv("mysql-host")
+	port := os.Getenv("mysql-port")
+	dbname := os.Getenv("mysql-dbname")
+	MySQLConfiguration.DSN = fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?charset=utf8&parseTime=True&loc=Local", usr, pwd, host, port, dbname)
+	return &MySQLConfiguration
 }
 
 func getMySQLConfiguration() *MySQLConfig {
