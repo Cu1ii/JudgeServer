@@ -3,19 +3,19 @@ package judge
 import (
 	"github.com/sirupsen/logrus"
 	"time"
-	"xoj_judgehost/constent"
-	"xoj_judgehost/database"
-	"xoj_judgehost/pool"
+	"xoj_judgehost/global"
+	"xoj_judgehost/internal/dao"
+	"xoj_judgehost/util/pool"
 )
 
 func RunJudge() {
 	go changeAuth()
 	for true {
 		time.Sleep(time.Second * 2)
-		pendingStatus := database.GetJudgeStatus()
+		pendingStatus := dao.GetJudgeStatus()
 		for _, status := range pendingStatus {
-			database.UpdateJudgeStatusResult(int(status.Id), constent.WAITING)
-			database.UpdateJudgeStatusJudger(int(status.Id), "XOJ")
+			dao.UpdateJudgeStatusResult(int(status.Id), global.WAITING)
+			dao.UpdateJudgeStatusJudger(int(status.Id), "XOJ")
 		}
 		for _, status := range pendingStatus {
 			if err := pool.GetJudgePool().Submit(
@@ -48,33 +48,33 @@ func changeAuth() {
 	for true {
 		time.Sleep(time.Second * 2)
 		allContest := map[int]bool{}
-		notExpiredContests := database.GetNotExpiredContest()
+		notExpiredContests := dao.GetNotExpiredContest()
 		for _, notExpiredContest := range notExpiredContests {
 			allContest[notExpiredContest.Id] = true
-			contestProblems := database.GetContestProblem(notExpiredContest.Id)
+			contestProblems := dao.GetContestProblem(notExpiredContest.Id)
 			for _, pro := range contestProblems {
 				if _, ok := curPro[pro.ProblemId]; !ok {
 					logrus.Info("58 pro.Problem", pro.ProblemId)
 					curPro[pro.ProblemId] = true
-					database.UpdateProblemDataAuth(pro.ProblemId, 2)
-					database.UpdateProblemAuth(pro.ProblemId, 2)
+					dao.UpdateProblemDataAuth(pro.ProblemId, 2)
+					dao.UpdateProblemAuth(pro.ProblemId, 2)
 				}
 			}
 		}
-		runningContests := database.GetRunningContest()
+		runningContests := dao.GetRunningContest()
 		for _, runningContest := range runningContests {
-			contestProblems := database.GetContestProblem(runningContest.Id)
+			contestProblems := dao.GetContestProblem(runningContest.Id)
 			for _, pro := range contestProblems {
 				if _, ok := curRunPro[pro.ProblemId]; !ok {
 					curRunPro[pro.ProblemId] = true
-					database.UpdateProblemDataAuth(pro.ProblemId, 3)
-					database.UpdateProblemAuth(pro.ProblemId, 3)
+					dao.UpdateProblemDataAuth(pro.ProblemId, 3)
+					dao.UpdateProblemAuth(pro.ProblemId, 3)
 				}
 			}
 		}
 		for contestId, _ := range curContest {
 			if _, ok := allContest[contestId]; !ok {
-				contestProblems := database.GetContestProblem(contestId)
+				contestProblems := dao.GetContestProblem(contestId)
 				for _, pro := range contestProblems {
 					if _, ok := curPro[pro.ProblemId]; ok {
 						delete(curPro, pro.ProblemId)
@@ -82,8 +82,8 @@ func changeAuth() {
 					if _, ok := curRunPro[pro.ProblemId]; ok {
 						delete(curRunPro, pro.ProblemId)
 					}
-					database.UpdateProblemDataAuth(pro.ProblemId, 1)
-					database.UpdateProblemAuth(pro.ProblemId, 1)
+					dao.UpdateProblemDataAuth(pro.ProblemId, 1)
+					dao.UpdateProblemAuth(pro.ProblemId, 1)
 				}
 			}
 		}

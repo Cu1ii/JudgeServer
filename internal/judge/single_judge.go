@@ -9,14 +9,11 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"xoj_judgehost/configuration"
-	"xoj_judgehost/database"
+	"xoj_judgehost/global"
+	"xoj_judgehost/internal/dao"
 	"xoj_judgehost/judger"
 	"xoj_judgehost/util"
 )
-
-var XojSubmissionPath = configuration.GetJudgeEnvironmentConfig().SubmissionPath
-var XojResolutionPath = configuration.GetJudgeEnvironmentConfig().ResolutionPath
 
 const (
 	Python2Path      = "/usr/bin/python2"
@@ -25,20 +22,23 @@ const (
 	SpecialJudgePath = "./shell/spj.sh"
 )
 
+// var XojSubmissionPath = global.JudgeSetting.SubmissionPath
+// var XojResolutionPath = global.JudgeSetting.ResolutionPath
+
 func judge(id int, code, language, problem string, contest int, username, oj, ojpro string,
 	submittime time.Time, contestproblem int, isOI bool) {
 	if contest != 0 {
-		database.SetBoard(int64(id), -1)
+		dao.SetBoard(int64(id), -1)
 	}
 
-	haveAc := database.GetIsHaveDoneProblem(username, problem)
+	haveAc := dao.GetIsHaveDoneProblem(username, problem)
 
 	if !haveAc {
-		database.AddProSubmitNum(problem)
+		dao.AddProSubmitNum(problem)
 	}
 
 	logrus.Info("Begin to Compile!")
-	if !compile(id, code, XojSubmissionPath, problem, language) {
+	if !compile(id, code, global.JudgeSetting.SubmissionPath, problem, language) {
 		logrus.Debug("compile ", problem, " fail")
 		return
 	}
@@ -52,9 +52,9 @@ func judge(id int, code, language, problem string, contest int, username, oj, oj
 	myTime := 0
 	myMemory := 0
 
-	timeLimit, memoryLimit := database.GetProblemTimeMemory(problem)
-	score := database.GetProblemScore(problem)
-	resolutionPath := fmt.Sprintf("%s/%s", XojResolutionPath, problem)
+	timeLimit, memoryLimit := dao.GetProblemTimeMemory(problem)
+	score := dao.GetProblemScore(problem)
+	resolutionPath := fmt.Sprintf("%s/%s", global.JudgeSetting.ResolutionPath, problem)
 	files, err := filepath.Glob(resolutionPath + "/*")
 	if err != nil || len(files) == 0 {
 		doneProblem(id, problem, "get resolution error!", 0, 0, username, contest, 5, "?")
@@ -90,14 +90,14 @@ func judge(id int, code, language, problem string, contest int, username, oj, oj
 	sort.Strings(inputFiles)
 	sort.Strings(exoutputFiles)
 
-	errorPath := fmt.Sprintf("%s/%d/%d%s", XojSubmissionPath, id, id, "error.out")
-	logPath := fmt.Sprintf("%s/%d/%d%s", XojSubmissionPath, id, id, "log.out")
+	errorPath := fmt.Sprintf("%s/%d/%d%s", global.JudgeSetting.SubmissionPath, id, id, "error.out")
+	logPath := fmt.Sprintf("%s/%d/%d%s", global.JudgeSetting.SubmissionPath, id, id, "log.out")
 
 	for idx, in := range inputFiles {
-		logrus.Infof("Judging!! %s/%s/%d.in", XojResolutionPath, problem, idx)
+		logrus.Infof("Judging!! %s/%s/%d.in", global.JudgeSetting.ResolutionPath, problem, idx)
 
-		outputPath := fmt.Sprintf("%s/%d/%d%s", XojSubmissionPath, id, idx, "temp.out")
-		inputPath := fmt.Sprintf("%s/%s/%d.in", XojResolutionPath, problem, idx)
+		outputPath := fmt.Sprintf("%s/%d/%d%s", global.JudgeSetting.SubmissionPath, id, idx, "temp.out")
+		inputPath := fmt.Sprintf("%s/%s/%d.in", global.JudgeSetting.ResolutionPath, problem, idx)
 		result, err := singleJudge(
 			timeLimit,
 			memoryLimit,
@@ -121,7 +121,7 @@ func judge(id int, code, language, problem string, contest int, username, oj, oj
 		maxMemory = maxInt(maxMemory, result.Memory)
 		maxTime = maxInt(maxTime, result.CpuTime)
 
-		expectOutputPath := fmt.Sprintf("%s/%s/%d.out", XojResolutionPath, problem, idx)
+		expectOutputPath := fmt.Sprintf("%s/%s/%d.out", global.JudgeSetting.ResolutionPath, problem, idx)
 		userOutputData := ""
 		caseData := ""
 		outputData := ""
@@ -201,7 +201,7 @@ func judge(id int, code, language, problem string, contest int, username, oj, oj
 		} else {
 			// isSpj := ""
 			res := 0 // 0 ac -3 wrong -5 presentation
-			spjPath := fmt.Sprintf("%s/%s/checker", XojResolutionPath, problem)
+			spjPath := fmt.Sprintf("%s/%s/checker", global.JudgeSetting.ResolutionPath, problem)
 			// 若存在 checker 文件, 则说明为 spj 问题
 			if util.IsFileIn(spjPath) {
 				logrus.Info("Begin to special judge!")
@@ -323,7 +323,7 @@ func singleJudge(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPat
 }
 
 func judgeC(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, logPath string) (*judger.Result, error) {
-	execPath := fmt.Sprintf("%s/%d/%d.o", XojSubmissionPath, id, id)
+	execPath := fmt.Sprintf("%s/%d/%d.o", global.JudgeSetting.SubmissionPath, id, id)
 	return judger.Run(
 		timeLimit,
 		timeLimit*10,
@@ -341,13 +341,13 @@ func judgeC(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, lo
 		outputPath,
 		errorPath,
 		logPath,
-		"",
+		"c_cpp",
 		//"c_cpp", 不知道为什么沙箱权限打开会有问题
 	)
 }
 
 func judgeCPP(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, logPath string) (*judger.Result, error) {
-	execPath := fmt.Sprintf("%s/%d/%d.o", XojSubmissionPath, id, id)
+	execPath := fmt.Sprintf("%s/%d/%d.o", global.JudgeSetting.SubmissionPath, id, id)
 	return judger.Run(
 		timeLimit,
 		timeLimit*10,
@@ -365,13 +365,13 @@ func judgeCPP(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, 
 		outputPath,
 		errorPath,
 		logPath,
-		"",
+		"c_cpp",
 		//"c_cpp", 不知道为什么沙箱权限打开会有问题
 	)
 }
 
 func judgeGo(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, logPath string) (*judger.Result, error) {
-	execPath := fmt.Sprintf("%s/%d/%d.o", XojSubmissionPath, id, id)
+	execPath := fmt.Sprintf("%s/%d/%d.o", global.JudgeSetting.SubmissionPath, id, id)
 	return judger.Run(
 		timeLimit,
 		timeLimit*10,
@@ -389,12 +389,12 @@ func judgeGo(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, l
 		outputPath,
 		errorPath,
 		logPath,
-		"",
+		"golang",
 	)
 }
 
 func judgeJava(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, logPath string) (*judger.Result, error) {
-	runPath := fmt.Sprintf("%s/%d/%d", XojSubmissionPath, id, id)
+	runPath := fmt.Sprintf("%s/%d/%d", global.JudgeSetting.SubmissionPath, id, id)
 	// javaArgs := fmt.Sprintf("'%s %s %s %s %s'", "-cp", runPath, "-Djava.security.policy==policy", "-Djava.awt.headless=true", "Main")
 	return judger.Run(
 		timeLimit,
@@ -413,12 +413,12 @@ func judgeJava(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath,
 		outputPath,
 		errorPath,
 		logPath,
-		"", // general
+		"general", // general
 	)
 }
 
 func judgePyhton2(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, logPath string) (*judger.Result, error) {
-	runPath := fmt.Sprintf("%s/%d/Main.py", XojSubmissionPath, id)
+	runPath := fmt.Sprintf("%s/%d/Main.py", global.JudgeSetting.SubmissionPath, id)
 	return judger.Run(
 		timeLimit,
 		timeLimit*10,
@@ -436,12 +436,12 @@ func judgePyhton2(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPa
 		outputPath,
 		errorPath,
 		logPath,
-		"", // general
+		"general", // general
 	)
 }
 
 func judgePyhton3(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPath, logPath string) (*judger.Result, error) {
-	runPath := fmt.Sprintf("%s/%d/Main.py", XojSubmissionPath, id)
+	runPath := fmt.Sprintf("%s/%d/Main.py", global.JudgeSetting.SubmissionPath, id)
 	return judger.Run(
 		timeLimit,
 		timeLimit*10,
@@ -459,7 +459,7 @@ func judgePyhton3(timeLimit, memoryLimit, id int, inputPath, outputPath, errorPa
 		outputPath,
 		errorPath,
 		logPath,
-		"", // general
+		"general", // general
 	)
 }
 

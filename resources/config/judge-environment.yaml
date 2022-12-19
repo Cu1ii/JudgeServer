@@ -1,2 +1,13 @@
-submission_path: /home/cu1/XOJ/submission
-resolution_path: /home/cu1/XOJ/resolutions
+judge-environment:
+  run_mode: debug
+  submission_path: /home/cu1/XOJ/submission
+  resolution_path: /home/cu1/XOJ/resolutions
+
+mysql:
+  dsn: username:password@tcp(localhost:3306)/judge_backend?charset=utf8&parseTime=True&loc=Local
+  default_string_size: 256
+  disable_datetime_precision: true
+  dont_support_rename_index: true
+  dont_support_rename_column: true
+  skip_initialize_with_version: false
+

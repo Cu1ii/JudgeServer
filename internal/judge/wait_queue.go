@@ -2,23 +2,23 @@ package judge
 
 import (
 	"sync"
-	"xoj_judgehost/dao"
+	"xoj_judgehost/internal/entity"
 )
 
 const queueMaxLength = 20
 
 type WaitQueue struct {
-	waitArray []*dao.JudgeStatus
+	waitArray []*entity.JudgeStatus
 	start     int
 	end       int
 	mu        sync.Mutex
 }
 
 func NewWaitQueue() *WaitQueue {
-	return &WaitQueue{waitArray: make([]*dao.JudgeStatus, queueMaxLength)}
+	return &WaitQueue{waitArray: make([]*entity.JudgeStatus, queueMaxLength)}
 }
 
-func (w *WaitQueue) push(p *dao.JudgeStatus) {
+func (w *WaitQueue) push(p *entity.JudgeStatus) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	if w.end < queueMaxLength {
@@ -27,7 +27,7 @@ func (w *WaitQueue) push(p *dao.JudgeStatus) {
 	}
 }
 
-func (w *WaitQueue) front() (res *dao.JudgeStatus) {
+func (w *WaitQueue) front() (res *entity.JudgeStatus) {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 	if w.empty() {

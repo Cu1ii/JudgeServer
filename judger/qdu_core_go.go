@@ -37,7 +37,7 @@ func Run(max_cpu_time,
 	seccomp_rule_name string) (*Result, error) {
 
 	// 如果不是在 docker 里需要加 sudo 权限, 或者直接以 root 用户执行
-	proc_args := []string{"echo \"your-password\" | sudo -S /usr/lib/judger/libjudger.so"}
+	proc_args := []string{"/usr/lib/judger/libjudger.so"}
 
 	//proc_args = append(proc_args, args...)
 	if len(args) > 0 {

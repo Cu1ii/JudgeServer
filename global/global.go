@@ -1,4 +1,9 @@
-package constent
+package global
+
+import (
+	"gorm.io/gorm"
+	"xoj_judgehost/util/setting"
+)
 
 const (
 	WAITING                  = -6
@@ -12,4 +17,10 @@ const (
 	MEMORY_LIMIT_EXCEEDED    = 3
 	RUNTIME_ERROR            = 4
 	SYSTEM_ERROR             = 5
+)
+
+var (
+	JudgeSetting *setting.JudgeSettingS = (*setting.JudgeSettingS)(nil)
+	MySQLSetting *setting.MySQLSettingS = (*setting.MySQLSettingS)(nil)
+	DBEngine     *gorm.DB               = (*gorm.DB)(nil)
 )

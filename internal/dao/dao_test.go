@@ -1,9 +1,9 @@
-package database
+package dao
 
 import (
 	"fmt"
 	"testing"
-	"xoj_judgehost/dao"
+	"xoj_judgehost/internal/entity"
 )
 
 func TestSelectAllJudgeStatus(t *testing.T) {
@@ -31,7 +31,7 @@ func TestSelectProblemDataByPk(t *testing.T) {
 }
 
 func TestCreateCaseStatus(t *testing.T) {
-	caseStatus := AddCaseStatus(&dao.CaseStatus{})
+	caseStatus := AddCaseStatus(&entity.CaseStatus{})
 	fmt.Println("insert result = ", caseStatus)
 }
 

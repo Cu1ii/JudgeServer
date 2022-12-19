@@ -1,38 +1,35 @@
-package database
+package dao
 
 import (
 	"fmt"
 	"github.com/sirupsen/logrus"
-	"xoj_judgehost/constent"
-	"xoj_judgehost/dao"
+	"xoj_judgehost/global"
+	"xoj_judgehost/internal/entity"
 )
 
 //---------------------------------JudgeStatus-----------------------------------------//
 
-func GetJudgeAllStatus() []*dao.JudgeStatus {
-	mySQLDB := GetMySQLDB()
-	judgeArry := []*dao.JudgeStatus{}
-	if res := mySQLDB.Raw("SELECT * FROM judgestatus_judgestatus").Scan(&judgeArry); res.Error != nil {
+func GetJudgeAllStatus() []*entity.JudgeStatus {
+	judgeArry := []*entity.JudgeStatus{}
+	if res := global.DBEngine.Raw("SELECT * FROM judgestatus_judgestatus").Scan(&judgeArry); res.Error != nil {
 		logrus.Error("select judge status error ", res.Error)
 		return nil
 	}
 	return judgeArry
 }
 
-func GetJudgeStatus() []*dao.JudgeStatus {
-	mySQLDB := GetMySQLDB()
-	judgeArry := []*dao.JudgeStatus{}
-	if res := mySQLDB.Raw("SELECT * FROM judgestatus_judgestatus where result = ?", constent.PENDING).Scan(&judgeArry); res.Error != nil {
+func GetJudgeStatus() []*entity.JudgeStatus {
+	judgeArry := []*entity.JudgeStatus{}
+	if res := global.DBEngine.Raw("SELECT * FROM judgestatus_judgestatus where result = ?", global.PENDING).Scan(&judgeArry); res.Error != nil {
 		logrus.Error("select judge status error ", res.Error)
 		return nil
 	}
 	return judgeArry
 }
 
-func GetJudgeStatusById(id int64) *dao.JudgeStatus {
-	mySQLDB := GetMySQLDB()
-	status := dao.JudgeStatus{}
-	if res := mySQLDB.Raw("SELECT * FROM judgestatus_judgestatus where id = ?", id).Scan(&status); res.Error != nil {
+func GetJudgeStatusById(id int64) *entity.JudgeStatus {
+	status := entity.JudgeStatus{}
+	if res := global.DBEngine.Raw("SELECT * FROM judgestatus_judgestatus where id = ?", id).Scan(&status); res.Error != nil {
 		logrus.Error("select judge status error ", res.Error)
 		return nil
 	}
@@ -40,8 +37,7 @@ func GetJudgeStatusById(id int64) *dao.JudgeStatus {
 }
 
 func UpdateJudgeStatusResult(id int, result int) bool {
-	mySQLDB := GetMySQLDB()
-	if res := mySQLDB.Exec("UPDATE judge_backend.judgestatus_judgestatus SET result = ? WHERE id = ?", result, id); res.Error != nil {
+	if res := global.DBEngine.Exec("UPDATE judge_backend.judgestatus_judgestatus SET result = ? WHERE id = ?", result, id); res.Error != nil {
 		logrus.Error("update judge status error ", res.Error)
 		return false
 	}
@@ -49,8 +45,7 @@ func UpdateJudgeStatusResult(id int, result int) bool {
 }
 
 func UpdateJudgeStatusMessage(id int, msg string) bool {
-	mySQLDB := GetMySQLDB()
-	if res := mySQLDB.Exec("UPDATE judge_backend.judgestatus_judgestatus SET message = ? WHERE id = ?", msg, id); res.Error != nil {
+	if res := global.DBEngine.Exec("UPDATE judge_backend.judgestatus_judgestatus SET message = ? WHERE id = ?", msg, id); res.Error != nil {
 		logrus.Error("update judge status error ", res.Error)
 		return false
 	}
@@ -58,8 +53,7 @@ func UpdateJudgeStatusMessage(id int, msg string) bool {
 }
 
 func UpdateJudgeStatusJudger(id int, judger string) bool {
-	mySQLDB := GetMySQLDB()
-	if res := mySQLDB.Exec("UPDATE judge_backend.judgestatus_judgestatus SET judger = ? WHERE id = ?", judger, id); res.Error != nil {
+	if res := global.DBEngine.Exec("UPDATE judge_backend.judgestatus_judgestatus SET judger = ? WHERE id = ?", judger, id); res.Error != nil {
 		logrus.Error("update judge status error ", res.Error)
 		return false
 	}
@@ -67,8 +61,7 @@ func UpdateJudgeStatusJudger(id int, judger string) bool {
 }
 
 func UpdateJudgeStatus(id int, memory, mytime int, result int, testcase string) bool {
-	mySQLDB := GetMySQLDB()
-	if res := mySQLDB.Exec("UPDATE judgestatus_judgestatus SET memory = ?, time= ?, result = ?, testcase=?  WHERE id = ?", memory, mytime, result, testcase, id); res.Error != nil {
+	if res := global.DBEngine.Exec("UPDATE judgestatus_judgestatus SET memory = ?, time= ?, result = ?, testcase=?  WHERE id = ?", memory, mytime, result, testcase, id); res.Error != nil {
 		logrus.Error("update judge status error ", res.Error)
 		return false
 	}
@@ -77,10 +70,9 @@ func UpdateJudgeStatus(id int, memory, mytime int, result int, testcase string) 
 
 //---------------------------------Problem-----------------------------------------//
 
-func GetProblemById(pk string) *dao.Problem {
-	mySQLDB := GetMySQLDB()
-	problem := dao.Problem{}
-	if res := mySQLDB.Raw("SELECT * FROM problem_problem WHERE problem = ?", pk).Scan(&problem); res.Error != nil {
+func GetProblemById(pk string) *entity.Problem {
+	problem := entity.Problem{}
+	if res := global.DBEngine.Raw("SELECT * FROM problem_problem WHERE problem = ?", pk).Scan(&problem); res.Error != nil {
 		logrus.Error("select problem error ", res.Error)
 		return nil
 	}
@@ -88,10 +80,9 @@ func GetProblemById(pk string) *dao.Problem {
 }
 
 func GetIsHaveDoneProblem(username, problem string) bool {
-	mySQLDB := GetMySQLDB()
 	selectProblem := fmt.Sprintf("SELECT * FROM judgestatus_judgestatus WHERE user = '%s'  AND problem = '%s' AND result = 0", username, problem)
-	problems := []dao.Problem{}
-	if res := mySQLDB.Raw(selectProblem).Scan(&problems); res.Error != nil {
+	problems := []entity.Problem{}
+	if res := global.DBEngine.Raw(selectProblem).Scan(&problems); res.Error != nil {
 		logrus.Error("select problem error ", res.Error)
 		return false
 	}
@@ -102,9 +93,8 @@ func GetIsHaveDoneProblem(username, problem string) bool {
 }
 
 func AddProSubmitNum(problem string) bool {
-	mySQLDB := GetMySQLDB()
 	addProSubmitNum := fmt.Sprintf("UPDATE problem_problemdata SET submission = submission+1 WHERE problem = '%s'", problem)
-	if res := mySQLDB.Exec(addProSubmitNum); res.Error != nil {
+	if res := global.DBEngine.Exec(addProSubmitNum); res.Error != nil {
 		logrus.Error("add problem data ( submission = submission + 1 ) error ", res.Error)
 		return false
 	}
@@ -121,10 +111,9 @@ func GetProblemScore(pk string) int {
 	return problemData.Score
 }
 
-func GetProblemDataById(pk string) *dao.ProblemData {
-	mySQLDB := GetMySQLDB()
-	problemData := dao.ProblemData{}
-	if res := mySQLDB.Raw("SELECT * FROM problem_problemdata WHERE problem = ?", pk).Scan(&problemData); res.Error != nil {
+func GetProblemDataById(pk string) *entity.ProblemData {
+	problemData := entity.ProblemData{}
+	if res := global.DBEngine.Raw("SELECT * FROM problem_problemdata WHERE problem = ?", pk).Scan(&problemData); res.Error != nil {
 		logrus.Error("select problem data error ", res.Error)
 		return nil
 	}
@@ -132,8 +121,7 @@ func GetProblemDataById(pk string) *dao.ProblemData {
 }
 
 func UpdateProblemData(pk string, result string) bool {
-	mySQLDB := GetMySQLDB()
-	if res := mySQLDB.Exec("UPDATE problem_problemdata SET submission = submission + 1, "+
+	if res := global.DBEngine.Exec("UPDATE problem_problemdata SET submission = submission + 1, "+
 		result+" = "+result+" + 1"+" WHERE problem = ?", pk); res.Error != nil {
 		logrus.Error("update problem data submission error ", res.Error)
 		return false
@@ -142,8 +130,7 @@ func UpdateProblemData(pk string, result string) bool {
 }
 
 func UpdateProblemAuth(pk string, auth int) bool {
-	mySQLDB := GetMySQLDB()
-	if res := mySQLDB.Exec("UPDATE  problem_problem SET auth = ? WHERE problem = ?", auth, pk); res.Error != nil {
+	if res := global.DBEngine.Exec("UPDATE  problem_problem SET auth = ? WHERE problem = ?", auth, pk); res.Error != nil {
 		logrus.Error("update problem data auth error ", res.Error)
 		return false
 	}
@@ -151,9 +138,8 @@ func UpdateProblemAuth(pk string, auth int) bool {
 }
 
 func UpdateProblemDataAuth(pk string, auth int) bool {
-	mySQLDB := GetMySQLDB()
 	logrus.Info("pk = ", pk, " auth = ", auth)
-	if res := mySQLDB.Exec("UPDATE  problem_problemdata SET auth = ? WHERE problem = ?", auth, pk); res.Error != nil {
+	if res := global.DBEngine.Exec("UPDATE  problem_problemdata SET auth = ? WHERE problem = ?", auth, pk); res.Error != nil {
 		logrus.Error("update problem data auth error ", res.Error)
 		return false
 	}
@@ -162,9 +148,8 @@ func UpdateProblemDataAuth(pk string, auth int) bool {
 
 //---------------------------------CaseStatus-----------------------------------------//
 
-func AddCaseStatus(status *dao.CaseStatus) bool {
-	mySQLDB := GetMySQLDB()
-	if create := mySQLDB.Exec("INSERT INTO judgestatus_casestatus "+
+func AddCaseStatus(status *entity.CaseStatus) bool {
+	if create := global.DBEngine.Exec("INSERT INTO judgestatus_casestatus "+
 		"(statusid, username, problem, result, time, memory, testcase, casedata, outputdata, useroutput)"+
 		"VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
 		status.StatusId, status.Username, status.Problem, status.Result,
@@ -178,19 +163,17 @@ func AddCaseStatus(status *dao.CaseStatus) bool {
 //---------------------------------Contest-----------------------------------------//
 
 func SetBoard(id int64, statue int) bool {
-	mySQLDB := GetMySQLDB()
 	updateBoardType := fmt.Sprintf("UPDATE contest_contestboard SET type = %d WHERE submitid = %d", statue, id)
-	if res := mySQLDB.Exec(updateBoardType); res.Error != nil {
+	if res := global.DBEngine.Exec(updateBoardType); res.Error != nil {
 		logrus.Error("update board type error ", res.Error)
 		return false
 	}
 	return true
 }
 
-func GetNotExpiredContest() []*dao.ConstInfo {
-	mySQLDB := GetMySQLDB()
-	var data []*dao.ConstInfo
-	res := mySQLDB.Raw("SELECT * from contest_contestinfo where type <> 'Personal' and TO_SECONDS(NOW()) - TO_SECONDS(begintime) <= lasttime").Scan(&data)
+func GetNotExpiredContest() []*entity.ConstInfo {
+	var data []*entity.ConstInfo
+	res := global.DBEngine.Raw("SELECT * from contest_contestinfo where type <> 'Personal' and TO_SECONDS(NOW()) - TO_SECONDS(begintime) <= lasttime").Scan(&data)
 	if res.Error != nil {
 		logrus.Error("select not expired contest error ", res.Error)
 		return nil
@@ -198,20 +181,18 @@ func GetNotExpiredContest() []*dao.ConstInfo {
 	return data
 }
 
-func GetContestProblem(contestId int) []*dao.ContestProblem {
-	mySQLDB := GetMySQLDB()
-	var problems []*dao.ContestProblem
-	if res := mySQLDB.Raw("SELECT * FROM contest_contestproblem WHERE contestid = ?", contestId).Scan(&problems); res.Error != nil {
+func GetContestProblem(contestId int) []*entity.ContestProblem {
+	var problems []*entity.ContestProblem
+	if res := global.DBEngine.Raw("SELECT * FROM contest_contestproblem WHERE contestid = ?", contestId).Scan(&problems); res.Error != nil {
 		logrus.Error("select contest problem error ", res.Error)
 		return nil
 	}
 	return problems
 }
 
-func GetRunningContest() []*dao.ConstInfo {
-	mySQLDB := GetMySQLDB()
-	var data []*dao.ConstInfo
-	res := mySQLDB.Raw(
+func GetRunningContest() []*entity.ConstInfo {
+	var data []*entity.ConstInfo
+	res := global.DBEngine.Raw(
 		"SELECT * from contest_contestinfo where type <> 'Personal' and " +
 			"TO_SECONDS(NOW()) - TO_SECONDS(begintime) <= lasttime and TO_SECONDS(NOW()) - TO_SECONDS(begintime) >=-1").Scan(&data)
 	if res.Error != nil {
@@ -222,15 +203,14 @@ func GetRunningContest() []*dao.ConstInfo {
 }
 
 func UpdateContestBoardTypeBySubmitId(typ, id int) bool {
-	mySQLDB := GetMySQLDB()
 	// 后端插入 contestBoard 可能会晚于此处更新, 所以要先等待相应 contestBoard 插入后再更新
 	for true {
 		tp := -2
-		if res := mySQLDB.Raw("SELECT type FROM contest_contestboard  WHERE submitid = ?", id).Scan(&tp); res.Error == nil && tp != -2 {
+		if res := global.DBEngine.Raw("SELECT type FROM contest_contestboard  WHERE submitid = ?", id).Scan(&tp); res.Error == nil && tp != -2 {
 			break
 		}
 	}
-	if res := mySQLDB.Exec("UPDATE contest_contestboard SET type = ?  WHERE submitid = ?", typ, id); res.Error != nil {
+	if res := global.DBEngine.Exec("UPDATE contest_contestboard SET type = ?  WHERE submitid = ?", typ, id); res.Error != nil {
 		logrus.Error("update contest board type error ", res.Error)
 		return false
 	}
@@ -240,9 +220,8 @@ func UpdateContestBoardTypeBySubmitId(typ, id int) bool {
 //---------------------------------User-----------------------------------------//
 
 func UpdateUserResult(username, result string) bool {
-	mySQLDB := GetMySQLDB()
 	updateSQL := fmt.Sprintf("UPDATE user_userdata SET %s = %s + 1 WHERE username = '%s'", result, result, username)
-	if res := mySQLDB.Exec(updateSQL); res.Error != nil {
+	if res := global.DBEngine.Exec(updateSQL); res.Error != nil {
 		logrus.Error("update user result error ", res.Error)
 		return false
 	}
@@ -250,9 +229,8 @@ func UpdateUserResult(username, result string) bool {
 }
 
 func UpdateUserScore(username string, score int) bool {
-	mySQLDB := GetMySQLDB()
 	updateSQL := fmt.Sprintf("UPDATE user_userdata SET score = score+%d WHERE username = '%s'", score, username)
-	if res := mySQLDB.Exec(updateSQL); res.Error != nil {
+	if res := global.DBEngine.Exec(updateSQL); res.Error != nil {
 		logrus.Error("update user score error ", res.Error)
 		return false
 	}
@@ -260,9 +238,8 @@ func UpdateUserScore(username string, score int) bool {
 }
 
 func UpdateUserAcPro(problem, username string) bool {
-	mySQLDB := GetMySQLDB()
 	updateSQL := fmt.Sprintf("UPDATE user_userdata SET acpro = concat(acpro,'|%s') WHERE username = '%s'", problem, username)
-	if res := mySQLDB.Exec(updateSQL); res.Error != nil {
+	if res := global.DBEngine.Exec(updateSQL); res.Error != nil {
 		logrus.Error("update user ac problem error ", res.Error)
 		return false
 	}

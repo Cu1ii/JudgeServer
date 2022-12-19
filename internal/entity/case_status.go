@@ -1,4 +1,4 @@
-package dao
+package entity
 
 type CaseStatus struct {
 	Id         int `gorm:"primaryKey"`

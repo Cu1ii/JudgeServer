@@ -3,7 +3,7 @@ package judge
 import (
 	"fmt"
 	"testing"
-	"xoj_judgehost/database"
+	"xoj_judgehost/internal/dao"
 )
 
 func TestRunJudge(t *testing.T) {
@@ -11,7 +11,7 @@ func TestRunJudge(t *testing.T) {
 }
 
 func TestJudge(t *testing.T) {
-	status := database.GetJudgeStatusById(1)
+	status := dao.GetJudgeStatusById(1)
 	judge(
 		int(status.Id),
 		status.Code,
