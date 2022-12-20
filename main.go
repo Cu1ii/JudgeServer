@@ -39,10 +39,12 @@ func setupSetting() error {
 		return err
 	}
 
+	// 如果需要通过配置文件读取就取消掉注释
 	//err = set.ReadSection("mysql", &global.MySQLSetting)
 	//if err != nil {
 	//	return err
 	//}
+	// 不采用 docker 设置环境变量就注释掉
 	GetMySQLConfigByEnv()
 	return nil
 }
