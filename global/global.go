@@ -17,10 +17,13 @@ const (
 	MEMORY_LIMIT_EXCEEDED    = 3
 	RUNTIME_ERROR            = 4
 	SYSTEM_ERROR             = 5
+
+	QUEUENAME = "judgeQue"
 )
 
 var (
-	JudgeSetting *setting.JudgeSettingS = (*setting.JudgeSettingS)(nil)
-	MySQLSetting *setting.MySQLSettingS = (*setting.MySQLSettingS)(nil)
-	DBEngine     *gorm.DB               = (*gorm.DB)(nil)
+	JudgeSetting    *setting.JudgeSettingS    = (*setting.JudgeSettingS)(nil)
+	MySQLSetting    *setting.MySQLSettingS    = (*setting.MySQLSettingS)(nil)
+	DBEngine        *gorm.DB                  = (*gorm.DB)(nil)
+	RabbitMQSetting *setting.RabbitMQSettingS = (*setting.RabbitMQSettingS)(nil)
 )

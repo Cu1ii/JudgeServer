@@ -39,7 +39,12 @@ func setupSetting() error {
 		return err
 	}
 
-	// 如果需要通过配置文件读取就取消掉注释
+	err = set.ReadSection("rabbitmq", &global.RabbitMQSetting)
+	if err != nil {
+		return err
+	}
+
+	//// 如果需要通过配置文件读取就取消掉注释
 	//err = set.ReadSection("mysql", &global.MySQLSetting)
 	//if err != nil {
 	//	return err

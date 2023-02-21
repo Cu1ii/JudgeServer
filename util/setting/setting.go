@@ -9,7 +9,7 @@ type Setting struct {
 func NewSetting() (*Setting, error) {
 	vp := viper.New()
 	vp.SetConfigName("judge-environment")
-	vp.AddConfigPath("	resources/config/")
+	vp.AddConfigPath("resources/config/")
 	vp.SetConfigType("yaml")
 	err := vp.ReadInConfig()
 	if err != nil {

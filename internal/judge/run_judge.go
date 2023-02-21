@@ -1,23 +1,56 @@
 package judge
 
 import (
+	"fmt"
 	"github.com/sirupsen/logrus"
+	"strconv"
 	"time"
 	"xoj_judgehost/global"
 	"xoj_judgehost/internal/dao"
 	"xoj_judgehost/util/pool"
+	"xoj_judgehost/util/rabbitmq"
 )
 
 func RunJudge() {
-	go changeAuth()
+	channel, connection, err := rabbitmq.NewRabbitMQConnect(global.RabbitMQSetting)
+	if err != nil {
+		logrus.Fatalf("RabbitMQ connect error %s", err.Error())
+	}
+	defer connection.Close()
+	defer channel.Close()
+
+	q, err := channel.QueueDeclare(
+		global.QUEUENAME, // name
+		true,             // durable
+		false,            // delete when unused
+		false,            // exclusive
+		false,            // no-wait
+		nil,              // arguments
+	)
+
+	// 获取接收消息的Delivery通道
+	msgs, err := channel.Consume(
+		q.Name, // queue
+		"",     // consumer
+		true,   // auto-ack
+		false,  // exclusive
+		false,  // no-local
+		false,  // no-wait
+		nil,    // args
+	)
+	if err != nil {
+		logrus.Error("Failed to register a consumer %s", err.Error())
+	}
+	// go changeAuth()
 	for true {
-		time.Sleep(time.Second * 2)
-		pendingStatus := dao.GetJudgeStatus()
-		for _, status := range pendingStatus {
-			dao.UpdateJudgeStatusResult(int(status.Id), global.WAITING)
-			dao.UpdateJudgeStatusJudger(int(status.Id), "XOJ")
-		}
-		for _, status := range pendingStatus {
+		fmt.Println("get judgeStatusId")
+		for d := range msgs {
+			msg := string(d.Body)
+			atoi, err := strconv.Atoi(msg)
+			if err != nil {
+				logrus.Error(err)
+			}
+			status := dao.GetJudgeStatusById(int64(atoi))
 			if err := pool.GetJudgePool().Submit(
 				func() {
 					judge(
@@ -40,7 +73,7 @@ func RunJudge() {
 	}
 }
 
-// 比赛题目设置为auth=2,contest开始时，自动设置题目为auth=3，比赛结束自动设置auth=1
+// 比赛题目设置为auth=2,contest开始时，自动设置题目为auth=3，比赛结束自动设置auth=1 暂时废弃
 func changeAuth() {
 	curContest := map[int]bool{}
 	curPro := map[string]bool{}

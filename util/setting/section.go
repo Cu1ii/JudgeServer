@@ -15,6 +15,13 @@ type JudgeSettingS struct {
 	ResolutionPath string `mapstructure:"resolution_path" yaml:"resolution_path"`
 }
 
+type RabbitMQSettingS struct {
+	Host     string
+	Port     int
+	Username string
+	Password string
+}
+
 func (s *Setting) ReadSection(k string, v interface{}) error {
 	err := s.vp.UnmarshalKey(k, v)
 	if err != nil {
